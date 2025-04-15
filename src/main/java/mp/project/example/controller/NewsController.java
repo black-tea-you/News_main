@@ -14,7 +14,7 @@ import mp.project.example.service.NewsService;
 import mp.project.example.service.OpenAIService;
 
 @RestController //이 클래스가 REST API의 컨트롤러 임을 나타냄, 반환 값은 자동으로 JSON으로 변환
-@RequestMapping("/api")  //api로 시작하는 모든 URL 요청을 처리 
+@RequestMapping("/api/news")  //api로 시작하는 모든 URL 요청을 처리 
 public class NewsController {
 
     private final NewsService newsService;
@@ -54,4 +54,10 @@ public class NewsController {
 
 
 }
+
+
+
+        
+  
+
 

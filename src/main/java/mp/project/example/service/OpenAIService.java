@@ -37,7 +37,7 @@ public class OpenAIService {
          Map<String, Object> requestBody = Map.of(
                 "model", "gpt-3.5-turbo",
                 "messages", new Object[]{
-                        Map.of("role", "system", "content", "다음 내용을 5줄 정도도로 한국어로 요약해줘."),
+                        Map.of("role", "system", "content", "다음 내용을 5줄 정도로 한국어로 요약해줘."),
                         Map.of("role", "user", "content", input)
                 }
         );

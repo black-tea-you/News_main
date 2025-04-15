@@ -39,4 +39,4 @@ out/
 #압축 파일
 *.zip
 
-.env
+.env.env
