@@ -28,6 +28,7 @@ public class NewsSearchController {
             @RequestParam String keyword,
             @RequestParam String date // yyyy-MM-dd
     ) throws IOException, java.io.IOException {
+        System.out.println("📥 [요청 도착] /api/news/search");
         List<NewsDTO> newsList = newsCrawlingService.crawlOneDay(category, keyword, date);
         return ResponseEntity.ok(newsList);
     }

@@ -10,4 +10,6 @@ public class NewsDTO {
     private String category;
     private String keyword;
     private String date;
+    private String urlimg;
+    private String summary;
 }

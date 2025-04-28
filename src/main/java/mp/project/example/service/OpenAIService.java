@@ -3,6 +3,10 @@ package mp.project.example.service;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
@@ -32,32 +36,34 @@ public class OpenAIService {
     
 
     public String summarizeText(String input) {
-        System.out.println("🧠 요약 요청: " + input.substring(0, Math.min(100, input.length())) + "...");
-       
-         Map<String, Object> requestBody = Map.of(
-                "model", "gpt-3.5-turbo",
-                "messages", new Object[]{
-                        Map.of("role", "system", "content", "다음 내용을 5줄 정도로 한국어로 요약해줘."),
-                        Map.of("role", "user", "content", input)
-                }
-        );
+    try {
+        var messages = java.util.List.of(
+            Map.of("role", "system", "content", "너는 뉴스 요약 도우미야."),
+            Map.of("role", "user", "content", "다음 기사를 3줄로 요약해줘:\n" + input)
+    );
 
-        try {
-            Map response = webClient.post()
+        String response = webClient.post()
                 .uri("/chat/completions")
-                .bodyValue(requestBody)
+                .bodyValue(Map.of(
+                        "model", "gpt-3.5-turbo",
+                        "messages", messages,
+                        "max_tokens", 300,
+                        "temperature", 0.7
+                ))
                 .retrieve()
-                .bodyToMono(Map.class)
-                 .block();
+                .bodyToMono(String.class)
+                .block();
 
-            System.out.println("✅ OpenAI 응답 수신: " + response);
+        // 결과 JSON에서 요약문 추출
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode root = mapper.readTree(response);
+        return root.path("choices").get(0).path("message").path("content").asText().trim();
 
-            var message = ((Map)((Map)((java.util.List)response.get("choices")).get(0)).get("message")).get("content");
-            return message.toString().trim();
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("❌ 요약 실패 상세: " + e.getMessage());
-            return "[요약 실패]";
-        }
+
+    } catch (Exception e) {
+        System.err.println("❌ OpenAI 요약 오류: " + e.getMessage());
+        return "요약 실패: " + e.getMessage();  // 또는 null 반환도 가능
     }
+}
+
 }
