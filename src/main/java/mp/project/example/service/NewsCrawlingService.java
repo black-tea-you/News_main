@@ -32,7 +32,7 @@ public class NewsCrawlingService {
     }
 
     public List<NewsDTO> crawlCategoryAndDate(String lstcode, String startDateStr, String endDateStr) throws Exception {
-        System.out.println("🚀 크롤링 시작: lstcode=" + lstcode + ", start=" + startDateStr + ", end=" + endDateStr);
+        System.out.println(" 크롤링 시작: lstcode=" + lstcode + ", start=" + startDateStr + ", end=" + endDateStr);
 
         List<NewsDTO> results = new ArrayList<>();
         //SimpleDateFormat inputFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z", Locale.ENGLISH);
@@ -52,12 +52,12 @@ public class NewsCrawlingService {
 
         Elements newsItems = doc.select("div.newsPost");
         if (newsItems.isEmpty()) break;
-        System.out.println("🔍 크롤링 URL: " + categoryUrl);
-        System.out.println("🧱 뉴스 개수: " + newsItems.size());
+        System.out.println(" 크롤링 URL: " + categoryUrl);
+        System.out.println(" 뉴스 개수: " + newsItems.size());
         for (Element newsItem : newsItems) {
             Element linkElement = newsItem.selectFirst("a[href]");
             if (linkElement == null) {
-                System.out.println("❌ 링크 없음, 건너뜀");
+                System.out.println(" 링크 없음, 건너뜀");
                 continue;}
 
             String link = linkElement.absUrl("href");
@@ -65,7 +65,7 @@ public class NewsCrawlingService {
             String title = titleElement != null ? titleElement.text() : "(제목 없음)";
             
 
-            // ✅ 썸네일 추출 (assetThumb 기준)
+            //  썸네일 추출 (assetThumb 기준)
             Element imgEl = newsItem.selectFirst("div.assetThumb img");
             String urlimg = imgEl != null ? imgEl.absUrl("src") : null;
 
@@ -81,15 +81,15 @@ public class NewsCrawlingService {
                         dateFromUrl.substring(4, 6) + "-" +
                         dateFromUrl.substring(6, 8);
             Date articleDate = compareFormat.parse(articleDateStr);
-            System.out.println("📆 URL에서 추출한 날짜: " + articleDateStr);
-            System.out.println("📰 기사 날짜: " + articleDateStr);
-            System.out.println("⏳ 기준 시작: " + compareFormat.format(startDate));
-            System.out.println("⏳ 기준 끝: " + compareFormat.format(endDate));
+            System.out.println(" URL에서 추출한 날짜: " + articleDateStr);
+            System.out.println(" 기사 날짜: " + articleDateStr);
+            System.out.println(" 기준 시작: " + compareFormat.format(startDate));
+            System.out.println(" 기준 끝: " + compareFormat.format(endDate));
             
             if (articleDate.before(startDate)) {
                 oldDateCount++;
 
-                System.out.println("📉 날짜 이전 기사 (연속 "+oldDateCount+"개)");
+                System.out.println(" 날짜 이전 기사 (연속 "+oldDateCount+"개)");
                 if(oldDateCount>=5){
                     System.out.println("날짜 이전 기사 연속 5개: 크롤링 종료");
                     stop = true; 
@@ -101,13 +101,13 @@ public class NewsCrawlingService {
                 oldDateCount=0; //날짜 포함 기사면 카운트 초기화 
             }
             if (articleDate.after(endDate)){
-                System.out.println("📈 날짜 초과 기사. 다음 기사로");
+                System.out.println(" 날짜 초과 기사. 다음 기사로");
                  continue;
             }
 
             Element content = articleDoc.selectFirst("div#articleBody");
             if (content == null || content.text().length() < 10){
-                System.out.println("❌ 본문 없음 또는 너무 짧음, 건너뜀 → 링크: " + link);
+                System.out.println(" 본문 없음 또는 너무 짧음, 건너뜀 → 링크: " + link);
     continue;
             } 
 
