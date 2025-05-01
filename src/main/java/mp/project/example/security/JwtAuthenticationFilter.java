@@ -34,6 +34,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
+                String uri = request.getRequestURI();
+
+                // 인증 제외할 경로
+                if (uri.startsWith("/api/news/search") || uri.startsWith("/api/news/home") ||
+                    uri.startsWith("/api/login") || uri.startsWith("/api/register")) {
+                    filterChain.doFilter(request, response);  // 테스트 용으로 임시로 api 인증없이 틍과시키기 
+                    return;
+                }  
+
         // 1. Authorization 헤더에서 JWT 추출
         String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
@@ -59,7 +68,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             } catch (Exception e) {
                 // 유효하지 않은 토큰 → 401 응답
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);    
                 return;
             }
             

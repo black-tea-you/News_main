@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.jsonwebtoken.io.IOException;
 import mp.project.example.dto.NewsDTO;
 import mp.project.example.service.NewsCrawlingService;
 
@@ -24,12 +23,20 @@ public class NewsSearchController {
 
     @GetMapping("/search")
     public ResponseEntity<List<NewsDTO>> searchNewsForOneDay(
-            @RequestParam String category,
+            /**@RequestParam String category,
             @RequestParam String keyword,
-            @RequestParam String date // yyyy-MM-dd
-    ) throws IOException, java.io.IOException {
+            @RequestParam String date, // yyyy-MM-dd**/
+            @RequestParam String lstcode,
+            @RequestParam String start,
+            @RequestParam String end 
+            //String categoryUrl = "https://zdnet.co.kr/news/?lstcode=0000";
+            //String start = "2025-04-28";
+            //String end = "2025-04-30";
+
+    ) throws Exception {
         System.out.println("📥 [요청 도착] /api/news/search");
-        List<NewsDTO> newsList = newsCrawlingService.crawlOneDay(category, keyword, date);
+        //categotyUrl 임베딩을 통해 정하는 방법 ?
+        List<NewsDTO> newsList = newsCrawlingService.crawlCategoryAndDate(lstcode, start, end);
         return ResponseEntity.ok(newsList);
     }
 }
