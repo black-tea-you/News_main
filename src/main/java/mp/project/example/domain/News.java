@@ -22,9 +22,11 @@ public class News {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne // 이 엔티티(News)는 하나의 User에 여러 개가 속할 수 있다는 의미 
+    /**  @ManyToOne // 이 엔티티(News)는 하나의 User에 여러 개가 속할 수 있다는 의미 
     @JoinColumn(name = "user_id") //외래 키로 사용할 컬럼 이름을 지정하는 부분 
-    private User user; //이 필드를 통해서 News에서 직접 User 정보에 접근 가능 
+    private User user; //이 필드를 통해서 News에서 직접 User 정보에 접근 가능**/
+    
+    
     @Column(name = "create_time")
     private String date;
     private String title;
@@ -34,4 +36,6 @@ public class News {
     private String urlimg;
     @Lob
     private String summary;
+    private String category;
+    private String embedding;
 }

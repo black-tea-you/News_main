@@ -114,25 +114,6 @@ public class NewsCrawlingService {
             String body = content.text();
             //String summary = openAIService.summarizeText(body);
             String summary="(요약 생략)";
-
-            News news = new News();
-            news.setTitle(title);
-            news.setDescription(body.length() > 1000 ? body.substring(0, 1000) + "..." : body);
-            news.setSummary(summary);
-            news.setLink(link);
-            news.setDate(articleDateStr);
-            //news.setCategory("ZDNet");
-            news.setUrlimg(urlimg);
-
-           /**  String userName = SecurityContextHolder.getContext().getAuthentication().getName();
-            User user = userRepository.findByUserName(userName)
-                    .orElseThrow(() -> new RuntimeException("User not found"));**/
-             User user = userRepository.findByUserName("abcd") //테스트 용으로 고정된 이름 사용 
-                    .orElseThrow(() -> new RuntimeException("Test user not found"));
-            news.setUser(user);
-           
-            newsRepository.save(news);
-
             String categoryName;
             switch (lstcode) {
                 case "0000": categoryName = "전체"; break;
@@ -145,6 +126,20 @@ public class NewsCrawlingService {
                 case "0070": categoryName = "과학"; break;
                 default: categoryName = lstcode; break;
             }
+
+            News news = new News();
+            news.setTitle(title);
+            news.setDescription(body.length() > 1000 ? body.substring(0, 1000) + "..." : body);
+            news.setSummary(summary);
+            news.setLink(link);
+            news.setDate(articleDateStr);
+            //news.setCategory("ZDNet");
+            news.setUrlimg(urlimg);
+            news.setCategory(categoryName);
+            news.setEmbedding(""); 
+            newsRepository.save(news);
+
+           
             NewsDTO dto = new NewsDTO();
             dto.setCategory(categoryName);
             dto.setTitle(title);
