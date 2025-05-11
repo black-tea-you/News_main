@@ -27,6 +27,7 @@ public class OpenAIService {
                 .defaultHeader("Content-Type","application/json")
                 .build();
     }
+    
     public String testSummary() {
         String testInput = "대한민국은 2025년에도 여전히 인공지능 기술이 빠르게 발전하고 있으며, 관련 산업도 큰 주목을 받고 있다.";
     
@@ -68,8 +69,8 @@ public class OpenAIService {
     }
 }
 
-/** 키워드 기반 예시 문장 생성 기능 추가 */
-public List<String> generateExamples(String keyword) {
+    /** 키워드 기반 예시 문장 생성 기능 추가 */
+    public List<String> generateExamples(String keyword) {
     try {
         var messages = List.of(
                 Map.of("role", "system", "content", "너는 뉴스 키워드 생성 도우미야."),
@@ -101,6 +102,49 @@ public List<String> generateExamples(String keyword) {
 
     } catch (Exception e) {
         System.err.println("❌ GPT 문장 생성 오류: " + e.getMessage());
+        return List.of();
+    }
+}
+
+
+    public List<String> refineTopKeywords(List<String> rawKeywords) {
+    try {
+        var messages = List.of(
+                Map.of("role", "system", "content", "너는 키워드 통합 전문가야."),
+                Map.of("role", "user", "content", """
+            다음은 뉴스에서 추출된 키워드 10개입니다:
+
+            1. AI
+            2. 인공지능
+            3. 클라우드
+            ...
+
+            - 동의어나 유사 키워드를 하나로 묶고, 의미상 가장 중요한 키워드 3개만 남겨줘.
+            - 결과는 JSON 배열 형태로 줘.
+            """.replace("...", String.join("\n", rawKeywords)))
+                    );
+
+        String response = webClient.post()
+                .uri("/chat/completions")
+                .bodyValue(Map.of(
+                        "model", "gpt-3.5-turbo",
+                        "messages", messages,
+                        "max_tokens", 300,
+                        "temperature", 0.7
+                ))
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
+
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode root = mapper.readTree(response);
+        String content = root.path("choices").get(0).path("message").path("content").asText();
+        return Arrays.stream(content.replaceAll("[\\[\\]\"]", "").split(","))
+                .map(String::trim)
+                .toList();
+
+    } catch (Exception e) {
+        System.err.println("❌ GPT 키워드 정제 실패: " + e.getMessage());
         return List.of();
     }
 }

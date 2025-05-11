@@ -191,15 +191,16 @@ public class NewsCrawlingService {
         return results;
     } */
 
-    @Transactional
-    public List<NewsDTO> crawlCategoryAndDate(String lstcode, String startDateStr, String endDateStr) throws Exception {
-    System.out.println(" 크롤링 START: lstcode=" + lstcode + ", start=" + startDateStr + ", end=" + endDateStr);
+@Transactional
+public List<NewsDTO> crawlCategoryAndDate(String lstcode, String startDateStr, String endDateStr) throws Exception {
+    System.out.println("크롤링 START: lstcode=" + lstcode + ", start=" + startDateStr + ", end=" + endDateStr);
 
     List<NewsDTO> results = new ArrayList<>();
-    SimpleDateFormat compareFormat = new SimpleDateFormat("yyyy-MM-dd");
+    SimpleDateFormat compareFmt = new SimpleDateFormat("yyyy-MM-dd");
+    SimpleDateFormat htmlFmt    = new SimpleDateFormat("yyyy.MM.dd a hh:mm", Locale.ENGLISH);
 
-    Date startDate = compareFormat.parse(startDateStr);
-    Date endDate   = compareFormat.parse(endDateStr);
+    Date startDate = compareFmt.parse(startDateStr);
+    Date endDate   = compareFmt.parse(endDateStr);
 
     int page = 1, count = 0, oldDateCount = 0;
     boolean stop = false;
@@ -213,69 +214,66 @@ public class NewsCrawlingService {
         Elements newsItems = doc.select("div.newsPost");
         if (newsItems.isEmpty()) break;
 
-        System.out.println(" 크롤링 URL: " + categoryUrl);
-        System.out.println(" NEWS 개수: " + newsItems.size());
+        System.out.println("크롤링 URL: " + categoryUrl);
+        System.out.println("NEWS 개수: " + newsItems.size());
 
         for (Element newsItem : newsItems) {
-            Element linkElement = newsItem.selectFirst("a[href]");
-            if (linkElement == null) {
-                System.out.println(" NO LINK, 건너뜀");
+            // 1) 기사 링크만 골라오기
+            Element linkEl = newsItem.selectFirst("div.assetText > a[href^=/view/?no=]");
+            if (linkEl == null) {
+                System.out.println("▶기사 링크를 찾을 수 없음 → 건너뜀");
                 continue;
             }
-            String link = linkElement.absUrl("href");
+            String link = linkEl.absUrl("href");
 
-            // ― 삭제: 본문 요청을 맨 처음에 하지 않도록 주석 처리  
-            // Document articleDoc = Jsoup.connect(link)
-            //         .userAgent("Mozilla/5.0")
-            //         .get();
+            // 2) HTML byline에서 날짜 읽어오기
+            Element dateEl = newsItem.selectFirst("p.byline span");
+            if (dateEl == null) {
+                System.out.println("날짜 요소를 찾을 수 없음 → 건너뜀");
+                continue;
+            }
+            String rawDate = dateEl.text().trim();  // ex: "2025.05.11 AM 09:55"
+            Date articleDate = htmlFmt.parse(rawDate);
+            String articleDateStr = compareFmt.format(articleDate);
+            System.out.println("HTML에서 읽어온 날짜: " + articleDateStr);
 
-            // ★ 변경: URL에서 날짜만 먼저 추출해서 Date 객체 생성
-            String dateFromUrl = link.split("no=")[1];
-            String articleDateStr = dateFromUrl.substring(0,4) + "-" +
-                                    dateFromUrl.substring(4,6) + "-" +
-                                    dateFromUrl.substring(6,8);
-            Date articleDate = compareFormat.parse(articleDateStr);
-            System.out.println(" URL에서 추출한 날짜: " + articleDateStr);
-
-            // ★ 변경: 시작일 이전 기사 연속 N개 카운트 및 건너뛰기
+            // 3) 시작일 이전 기사 처리
             if (articleDate.before(startDate)) {
                 if (++oldDateCount >= 5) {
                     System.out.println("날짜 이전 기사 연속 5개: 크롤링 종료");
                     stop = true;
                     break;
                 }
-                System.out.println(" 날짜 이전 기사 (연속 "+oldDateCount+"개) → 건너뜀");
+                System.out.println("날짜 이전 기사 (연속 " + oldDateCount + "개) → 건너뜀");
                 continue;
             } else {
                 oldDateCount = 0;
             }
 
-            // ★ 변경: 종료일 이후 기사면 건너뛰기
+            // 4) 종료일 이후 기사 처리
             if (articleDate.after(endDate)) {
-                System.out.println(" 날짜 초과 기사. 건너뜀");
+                System.out.println("날짜 초과 기사. 건너뜀");
                 continue;
             }
 
-            // ───────────────────────────────────────────
-            // 2) 이제 범위 안 기사는 본문 요청 시작
+            // 5) 본문 요청 및 요약
             Document articleDoc = Jsoup.connect(link)
                                        .userAgent("Mozilla/5.0")
                                        .get();
-
-            Element titleElement = newsItem.selectFirst("div.assetText h3");
-            String title = titleElement != null ? titleElement.text() : "(제목 없음)";
-            Element imgEl = newsItem.selectFirst("div.assetThumb img");
-            String urlimg = imgEl != null ? imgEl.absUrl("src") : null;
+            Element titleEl = newsItem.selectFirst("div.assetText h3");
+            String title = titleEl != null ? titleEl.text() : "(제목 없음)";
+            Element imgEl   = newsItem.selectFirst("div.assetThumb img");
+            String urlimg   = imgEl != null ? imgEl.absUrl("src") : null;
 
             Element content = articleDoc.selectFirst("div#articleBody");
             if (content == null || content.text().length() < 10) {
-                System.out.println(" 본문 없음 또는 너무 짧음, 건너뜀 → 링크: " + link);
+                System.out.println("본문 없음 또는 너무 짧음, 건너뜀 → 링크: " + link);
                 continue;
             }
             String body = content.text();
             String summary = openAIService.summarizeText(body);
 
-            // 카테고리 매핑 (기존 로직 유지)
+            // 카테고리 매핑
             String categoryName;
             switch (lstcode) {
                 case "0000": categoryName = "전체"; break;
@@ -289,11 +287,10 @@ public class NewsCrawlingService {
                 default:     categoryName = lstcode;     break;
             }
 
+            // 저장 및 DTO 생성
             News news = new News();
             news.setTitle(title);
-            news.setDescription(body.length() > 1000
-                ? body.substring(0, 1000) + "..."
-                : body);
+            news.setDescription(body.length() > 1000 ? body.substring(0,1000)+"..." : body);
             news.setSummary(summary);
             news.setLink(link);
             news.setDate(articleDateStr);
@@ -301,8 +298,6 @@ public class NewsCrawlingService {
             news.setCategory(categoryName);
 
             newsRepository.save(news);
-            System.out.println("Saved id=" + news.getId());
-
             byte[] vector = embeddingService.indexTitle(news.getId(), title);
             news.setEmbedding(vector);
             newsRepository.save(news);
@@ -311,9 +306,7 @@ public class NewsCrawlingService {
             dto.setCategory(categoryName);
             dto.setTitle(title);
             dto.setLink(link);
-            dto.setDescription(body.length() > 500
-                ? body.substring(0, 500) + "..."
-                : body);
+            dto.setDescription(body.length()>500?body.substring(0,500)+"...":body);
             dto.setDate(articleDateStr);
             dto.setSummary(summary);
             dto.setKeyword("");
@@ -325,14 +318,11 @@ public class NewsCrawlingService {
                 break;
             }
         }
-
         if (stop) break;
         page++;
     }
-
     return results;
 }
-
 
 
     public List<News> getAllArticles() {

@@ -21,4 +21,9 @@ public class UserProfile{
     @JoinColumn(name="user_id")
     private User user;
 
+    public UserProfile() {}
+    public UserProfile(User user) {
+        this.user = user;
+    }
+
 }
