@@ -21,6 +21,8 @@ configurations {
 
 repositories {
 	mavenCentral()
+	// milestone repo 가 필요할 수 있습니다
+	maven { url = uri("https://repo.spring.io/milestone") }
 }
 
 dependencies {
@@ -39,6 +41,8 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt-api:0.11.5")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5") // JSON 직렬화/역직렬화
+
+	implementation("org.springframework.ai:spring-ai-starter-model-openai:1.0.0-M7")//openai 
 }
 
 tasks.withType<Test> {

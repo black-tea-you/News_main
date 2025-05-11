@@ -29,8 +29,8 @@ public class SecurityConfig {
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 세션 안 씀
             .and()
             .authorizeHttpRequests()
-                .requestMatchers("/api/login", "/api/register","/api/news/home").permitAll()  
-                .requestMatchers("/api/news/search","api/news/scrap").authenticated()
+                .requestMatchers("/api/login", "/api/register","/api/news/home","/api/news/search","/api/test/testEmbedding").permitAll()  
+                .requestMatchers("api/news/scrap").authenticated()
                 .anyRequest().authenticated()
             .and()
             .formLogin().disable() // ✅ 기본 로그인 화면 제거

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import mp.project.example.domain.News;
 import mp.project.example.dto.NewsDTO;
 import mp.project.example.service.NewsCrawlingService;
 
@@ -38,5 +39,10 @@ public class NewsSearchController {
         //categotyUrl 임베딩을 통해 정하는 방법 ?
         List<NewsDTO> newsList = newsCrawlingService.crawlCategoryAndDate(lstcode, start, end);
         return ResponseEntity.ok(newsList);
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<News>> getAllArticles() {
+        return ResponseEntity.ok(newsCrawlingService.getAllArticles());
     }
 }

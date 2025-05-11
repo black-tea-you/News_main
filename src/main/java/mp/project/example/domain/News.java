@@ -30,12 +30,17 @@ public class News {
     @Column(name = "create_time")
     private String date;
     private String title;
+    
     @Lob
     private String description;
     private String link;
     private String urlimg;
+
     @Lob
     private String summary;
     private String category;
-    private String embedding;
+
+    @Lob
+    @Column(name = "embedding", columnDefinition = "LONGBLOB")
+    private byte[] embedding;
 }
