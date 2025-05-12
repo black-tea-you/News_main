@@ -26,6 +26,7 @@ public class NewsSearchController {
     public ResponseEntity<List<NewsDTO>> getLatestHeadlines(@RequestParam(defaultValue = "5") int size) {
     List<NewsDTO> newsList = newsCrawlingService.getLatestHeadlines(size);
     return ResponseEntity.ok(newsList);
+    
     }
     
 
