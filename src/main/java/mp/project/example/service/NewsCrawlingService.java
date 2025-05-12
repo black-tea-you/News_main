@@ -211,7 +211,9 @@ public List<NewsDTO> crawlCategoryAndDate(String lstcode, String startDateStr, S
                             .userAgent("Mozilla/5.0")
                             .get();
 
-        Elements newsItems = doc.select("div.newsPost");
+        //Elements newsItems = doc.select("div.newsPost");
+
+        Elements newsItems = doc.select("div.newsPost[class=newsPost]");
         if (newsItems.isEmpty()) break;
 
         System.out.println("크롤링 URL: " + categoryUrl);
@@ -328,4 +330,13 @@ public List<NewsDTO> crawlCategoryAndDate(String lstcode, String startDateStr, S
     public List<News> getAllArticles() {
         return newsRepository.findAll();
     }
+
+    //(테스트용) 기사 5개 반환 받는 함수
+    public List<NewsDTO> getLatestHeadlines(int size) {
+    List<News> latestNews = newsRepository.findTop5ByOrderByDateDesc();
+    return latestNews.stream()
+            .map(NewsDTO::fromEntity) // News → NewsDTO 변환
+            .toList();
+    }
+
 }

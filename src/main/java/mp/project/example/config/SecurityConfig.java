@@ -29,7 +29,7 @@ public class SecurityConfig {
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 세션 안 씀
             .and()
             .authorizeHttpRequests()
-                .requestMatchers("/api/login", "/api/register","/api/news/home","/api/news/search","/api/test/testEmbedding","/api/keywords/final").permitAll()  
+                .requestMatchers("/api/login", "/api/register","/api/news/home","/api/news/search","/api/test/testEmbedding","/api/keywords/final","/api/news/headline").permitAll()  
                 .requestMatchers("api/news/scrap").authenticated()
                 .anyRequest().authenticated()
             .and()

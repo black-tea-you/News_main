@@ -22,6 +22,13 @@ public class NewsSearchController {
         this.newsCrawlingService = newsCrawlingService;
     }
 
+    @GetMapping("/headline")
+    public ResponseEntity<List<NewsDTO>> getLatestHeadlines(@RequestParam(defaultValue = "5") int size) {
+    List<NewsDTO> newsList = newsCrawlingService.getLatestHeadlines(size);
+    return ResponseEntity.ok(newsList);
+    }
+    
+
     @GetMapping("/search")
     public ResponseEntity<List<NewsDTO>> searchNewsForOneDay(
             /**@RequestParam String category,

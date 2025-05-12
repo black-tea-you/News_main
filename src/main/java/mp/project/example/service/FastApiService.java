@@ -13,7 +13,7 @@ public class FastApiService {
 
     private final WebClient webClient;
 
-    private final String BASE_URL = "http://localhost:8000";//"https://your-fastapi.onrender.com";
+    private final String BASE_URL = "http://localhost:8000";//"https://your-fastapi.onrender.com"; 현재 local로 테스트 중
 
     public List<String> getTitles() {
         return webClient.get()

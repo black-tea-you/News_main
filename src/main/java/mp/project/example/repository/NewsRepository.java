@@ -10,4 +10,7 @@ public interface NewsRepository extends JpaRepository<News, Long>{
     // 시작일(startDate) 이상, 종료일(endDate) 이하 범위 내 기사만 날짜 내림차순으로 조회 찾는 속도 너무 느려서 search 방식 조정
     List<News> findAllByDateGreaterThanEqualAndDateLessThanEqualOrderByDateDesc(
         String startDate, String endDate);
+    
+    //최신 기사 5개 받아오는 것
+    List<News> findTop5ByOrderByDateDesc();
 }

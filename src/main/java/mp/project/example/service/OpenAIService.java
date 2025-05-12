@@ -112,17 +112,17 @@ public class OpenAIService {
         var messages = List.of(
                 Map.of("role", "system", "content", "너는 키워드 통합 전문가야."),
                 Map.of("role", "user", "content", """
-            다음은 뉴스에서 추출된 키워드 10개입니다:
+        다음은 뉴스에서 추출된 키워드 10개입니다:
 
-            1. AI
-            2. 인공지능
-            3. 클라우드
-            ...
+        1. AI
+        2. 인공지능
+        3. 클라우드
+        ...
 
-            - 동의어나 유사 키워드를 하나로 묶고, 의미상 가장 중요한 키워드 3개만 남겨줘.
-            - 결과는 JSON 배열 형태로 줘.
-            """.replace("...", String.join("\n", rawKeywords)))
-                    );
+        - 동의어나 유사 키워드를 하나로 묶고, 의미상 가장 중요한 키워드 3개만 남겨줘.
+        - 결과는 JSON 배열 형태로 줘.
+        """.replace("...", String.join("\n", rawKeywords)))
+                );
 
         String response = webClient.post()
                 .uri("/chat/completions")
