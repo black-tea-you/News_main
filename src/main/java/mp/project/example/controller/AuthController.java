@@ -6,14 +6,17 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import mp.project.example.domain.User;
 import mp.project.example.domain.UserProfile;
 import mp.project.example.dto.LoginRequest;
+import mp.project.example.dto.LoginResponse;
 import mp.project.example.dto.RegisterRequest;
 import mp.project.example.repository.UserProfileRepositoty;
 import mp.project.example.repository.UserRepository;
 import mp.project.example.util.JwtUtil;
+import org.springframework.http.HttpStatus;
 
 @RestController  //이 클래스가 REST API의 요청을 처리한다는 의미 
 @RequestMapping("/api")  // 이 컨트롤러의 모든 URL은 /api로 시작 
@@ -54,22 +57,26 @@ public class AuthController {
         return ResponseEntity.ok("회원가입 성공");
     }
 
-    // 로그인
-    @PostMapping("/login") //POST /api/login으로 요청이 오면 실행 
-    public ResponseEntity<String> login(@RequestBody LoginRequest request) { //LoginReques dto 사용
-        User user = userRepository.findByUserName(request.userName)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 아이디입니다."));
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
+        User user = userRepository.findByUserName(request.getUserName())
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.UNAUTHORIZED, "존재하지 않는 아이디입니다."));
 
-        if (!passwordEncoder.matches(request.password, user.getPassword())) {
-            return ResponseEntity.status(401).body("비밀번호가 일치하지 않습니다.");
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new ResponseStatusException(
+                HttpStatus.UNAUTHORIZED, "비밀번호가 일치하지 않습니다.");
         }
 
-         // 로그인 시 프로필 체크/생성
+        // 프로필 체크/생성
         userProfileRepositoty.findByUserId(user.getId())
-        .orElseGet(() -> userProfileRepositoty.save(new UserProfile(user)));
+            .orElseGet(() -> userProfileRepositoty.save(new UserProfile(user)));
 
+        // JWT 토큰 생성
         String token = jwtUtil.createToken(user.getUserName());
-        return ResponseEntity.ok(token); // 클라이언트는 이 토큰을 저장해서 이후 요청에 사용
+
+        // 반드시 LoginResponse DTO로 감싸서 반환
+        return ResponseEntity.ok(new LoginResponse(token));
     }
 }
 

@@ -43,4 +43,28 @@ public class JwtUtil { // JWT 토큰을 생성하고 파싱하는 유틸리티 �
                 .getBody()
                 .getSubject();
     }
+
+     // 3) 토큰이 유효한지 검사 (서명, 만료일)
+    public boolean validateToken(String token) {
+        try {
+            Jws<Claims> claims = Jwts.parserBuilder()
+                                     .setSigningKey(secretKey.getBytes())
+                                     .build()
+                                     .parseClaimsJws(token);
+            // 만료일이 현재 이후인지 확인
+            return !claims.getBody().getExpiration().before(new Date());
+        } catch (JwtException | IllegalArgumentException e) {
+            // 서명 불일치, 파싱 에러, 만료 등
+            return false;
+        }
+    }
+
+    // 4) Claims 파싱 분리
+    private Claims parseClaims(String token) {
+        return Jwts.parserBuilder()
+                   .setSigningKey(secretKey.getBytes())
+                   .build()
+                   .parseClaimsJws(token)
+                   .getBody();
+    }
 }
